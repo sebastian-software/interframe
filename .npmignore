@@ -1,0 +1,15 @@
+assets
+config
+scripts
+node_modules
+test
+src
+
+appveyor.yml
+.babelrc
+.editorconfig
+.eslintrc.yml
+.gitattributes
+.npmignore
+.travis.yml
+.eslintignore
