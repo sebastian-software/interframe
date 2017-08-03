@@ -1,6 +1,6 @@
 {
   "name": "interframe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "postMessage web api based lightwight interframe communication layer",
   "main": "lib/interframe.commonjs.js",
   "module": "lib/interframe.esmodules.js",
