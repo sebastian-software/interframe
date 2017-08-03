@@ -59,7 +59,7 @@ const channel2 = interframe(window, "*")
 
 channel1.addListener((message) =>
 {
-  responseChannel = message.open()
+  const responseChannel = message.open()
 
   setTimeout(() =>
   {
