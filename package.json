@@ -13,7 +13,10 @@
     "frame",
     "iframe"
   ],
-  "author": "Sebastian Fastner <s.fastner@sebastian-software.de>",
+  "author": {
+    "name": "Sebastian Fastner",
+    "email": "s.fastner@sebastian-software.de"
+  },
   "license": "MIT",
   "devDependencies": {
     "jest": "^20.0.4",
