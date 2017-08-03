@@ -2,10 +2,11 @@
   "name": "interframe",
   "version": "1.0.0",
   "description": "Inter frame communication via postMessage",
-  "main": "src/index.js",
+  "main": "lib/interframe.commonjs.js",
+  "module": "lib/interframe.esmodules.js",
   "scripts": {
-    "prepare": "prepublish"
     "test": "jest",
+    "prepare": "rimraf lib && prepublish"
   },
   "keywords": [
     "communication",
