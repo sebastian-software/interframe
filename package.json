@@ -6,6 +6,7 @@
   "module": "lib/interframe.esmodules.js",
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
     "prepare": "rimraf lib && prepublish"
   },
   "keywords": [
