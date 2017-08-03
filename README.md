@@ -23,7 +23,7 @@ counterpart frame to open a communication channel with that frame.
 import interframe from "interframe"
 
 /* get reference to iframe */
-const iframe = document.getElementById("#myIframe")
+const iframe = document.getElementById("myIframe")
 
 const channel = interframe(iframe.contentWindow, "*")
 ````
