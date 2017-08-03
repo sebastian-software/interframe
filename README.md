@@ -1,6 +1,16 @@
-# Interframe
+# Interframe<br/>[![Sponsored by][sponsor-img]][sponsor] [![Version][npm-version-img]][npm] [![Downloads][npm-downloads-img]][npm] [![Build Status Unix][travis-img]][travis] [![Dependencies][deps-img]][deps]
 
 Communication made easy between browser frames.
+
+[sponsor-img]: https://img.shields.io/badge/Sponsored%20by-Sebastian%20Software-692446.svg
+[sponsor]: https://www.sebastian-software.de
+[deps]: https://david-dm.org/sebastian-software/interframe
+[deps-img]: https://david-dm.org/sebastian-software/interframe.svg
+[npm]: https://www.npmjs.com/package/interframe
+[npm-downloads-img]: https://img.shields.io/npm/dm/interframe.svg
+[npm-version-img]: https://img.shields.io/npm/v/interframe.svg
+[travis-img]: https://img.shields.io/travis/sebastian-software/interframe/master.svg?branch=master&label=unix%20build
+[travis]: https://travis-ci.org/sebastian-software/interframe
 
 
 # Using Interframe
@@ -81,3 +91,9 @@ channel2
 ````
 
 `response()` is a shortcut of send with preset namespace of source message.
+
+## Copyright
+
+<img src="https://raw.githubusercontent.com/sebastian-software/s15e-javascript/master/assets/sebastiansoftware.png" alt="Sebastian Software GmbH Logo" width="250" height="200"/>
+
+Copyright 2016-2017<br/>[Sebastian Software GmbH](http://www.sebastian-software.de)
