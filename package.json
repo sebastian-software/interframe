@@ -1,7 +1,7 @@
 {
   "name": "interframe",
   "version": "1.0.0",
-  "description": "Inter frame communication via postMessage",
+  "description": "postMessage web api based lightwight interframe communication layer",
   "main": "lib/interframe.commonjs.js",
   "module": "lib/interframe.esmodules.js",
   "scripts": {
