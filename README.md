@@ -92,6 +92,86 @@ channel2
 
 `response()` is a shortcut of send with preset namespace of source message.
 
+# API
+
+````
+function interframe(targetWindow, [origin = "*"])
+
+returns
+
+{
+  addListener,
+  removeListener,
+  send,
+  hasHandshake
+}
+````
+
+This factory function returns a channel.
+
+
+
+````
+function addListener(callback)
+
+returns
+
+callback
+````
+
+Add callback for new messages. callback is a function with the signature
+`(message) => {}`
+
+
+
+````
+function removeListener(callback)
+````
+
+Disconnect specific callback from message events.
+
+
+
+````
+function send(namespace, [data])
+
+returns
+
+Promise<message>
+````
+
+Send message to opposite side. `namespace` is a string that defines the type
+of the message. `data` is an optional argument that must be serializable by
+`JSON.stringify`.
+
+The returned message consists of
+````
+{
+  id,
+  data,
+  namespace,
+  response,
+}
+````
+
+- id is the id of the message
+- data is the optional data object (given in send())
+- namespace is the namespace (given in send())
+
+The promise only resolves if the `response()`function of the message inside addListener callback is used.
+
+````
+function hasHandshake([callback])
+
+returns
+
+boolean
+````
+
+Returns if handshake is successfull. An optional callback is called as
+soon as there is a handshake.
+
+
 ## Copyright
 
 <img src="https://raw.githubusercontent.com/sebastian-software/s15e-javascript/master/assets/sebastiansoftware.png" alt="Sebastian Software GmbH Logo" width="250" height="200"/>
