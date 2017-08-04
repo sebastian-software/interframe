@@ -9,11 +9,13 @@ function createWindowMock()
     {
       listeners.forEach((listener) =>
       {
-        listener({
-          source: mockWin,
-          origin,
-          data: message
-        })
+        setTimeout(() => {
+          listener({
+            source: mockWin,
+            origin,
+            data: message
+          })
+        }, 0)
       })
     }),
 
@@ -106,7 +108,7 @@ test("handshakes", (done) =>
   })
 })
 
-test("response to message", () =>
+test("response to message", (done) =>
 {
   const mockWindow = createWindowMock()
   const channel1 = interframe(mockWindow, "*", mockWindow)
@@ -129,6 +131,39 @@ test("response to message", () =>
     {
       expect(message).toBeDefined()
       expect(message.data.hello).toBe("Hi Sebastian")
-      return true
+
+      return done()
     })
+})
+
+test("response to message before handshake", (done) =>
+{
+  const mockWindow = createWindowMock({ delay: true })
+  const channel1 = interframe(mockWindow, "*", mockWindow)
+
+  channel1
+    .send("my namespace", { username: "Sebastian" })
+    .then((message) =>
+    {
+      expect(message).toBeDefined()
+      expect(message.data.hello).toBe("Hi Sebastian")
+      return done()
+    })
+    .catch((error) => {
+      expect(error).toBeFalsy()
+      throw done()
+    })
+
+  const channel2 = interframe(mockWindow, "*", mockWindow)
+
+  channel2.addListener((message) =>
+  {
+    const responseChannel = message.open()
+    setTimeout(() =>
+    {
+      responseChannel.response({
+        hello: `Hi ${message.data.username}`
+      })
+    }, 1000)
+  })
 })

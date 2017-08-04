@@ -15,6 +15,7 @@ function interframe(targetWindow, origin = "*", sourceWindow)
   const listeners = []
   const handshakeCallback = []
   const responseResolver = {}
+  const preHandshakeSendQueue = []
   let isHandshaken = false
 
   function addListener(callback)
@@ -41,6 +42,18 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     if (typeof namespace !== "string")
     {
       throw new Error("parameter 'namespace' must be a string")
+    }
+
+    if (!isHandshaken) {
+      return new Promise((resolve) =>
+      {
+        preHandshakeSendQueue.push({
+          namespace,
+          data,
+          responseId,
+          resolve
+        })
+      })
     }
 
     const id = nextID()
@@ -96,6 +109,18 @@ function interframe(targetWindow, origin = "*", sourceWindow)
       hsCallback()
     }
     handshakeCallback.length = 0
+
+    for (const sendItem of preHandshakeSendQueue) {
+      send(
+        sendItem.namespace,
+        sendItem.data,
+        sendItem.responseId
+      ).then(
+        (response) => sendItem.resolve(response)
+      ).catch(
+        () => sendItem.resolve()
+      )
+    }
   }
 
   function createMessage(messageData)
