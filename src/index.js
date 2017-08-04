@@ -126,15 +126,12 @@ function interframe(targetWindow, origin = "*", sourceWindow)
 
   function handleMessage(messageData)
   {
-    if (messageData.responseId)
+    if (messageData.responseId && responseResolver[messageData.responseId])
     {
       const resolver = responseResolver[messageData.responseId]
-      if (resolver)
-      {
-        clearTimeout(resolver.timer)
-        resolver.resolve(messageData)
-        responseResolver[messageData.responseId] = undefined
-      }
+      clearTimeout(resolver.timer)
+      resolver.resolve(messageData)
+      responseResolver[messageData.responseId] = undefined
     }
     else
     {
