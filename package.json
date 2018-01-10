@@ -4,6 +4,10 @@
   "description": "postMessage web api based lightweight interframe communication layer",
   "main": "lib/interframe.commonjs.js",
   "module": "lib/interframe.esmodules.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sebastian-software/interframe.git"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
