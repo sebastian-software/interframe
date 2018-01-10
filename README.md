@@ -30,6 +30,15 @@ const channel = interframe(iframe.contentWindow, "*")
 
 Using `*` as origin allows communication with every other message provider.
 
+Inside of the iframe you can open the channel via
+
+````
+const channel = interframe(window.top)
+````
+
+All communication data are stored in memory as long as the handshake is not done. As soon as the handshake is done the data
+are sent through the channel.
+
 
 ## Listening for messages
 
