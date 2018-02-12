@@ -6,59 +6,49 @@ function createWindowMock() {
   return virtDom.window
 }
 
-test("factory function available", () =>
-{
+test("factory function available", () => {
   expect(typeof interframe).toBe("function")
 })
 
-test("expect window object in factory function", () =>
-{
-  expect(() =>
-  {
+test("expect window object in factory function", () => {
+  expect(() => {
     interframe()
   }).toThrowError(/parameter/)
 })
 
-test("can add message listener", () =>
-{
+test("can add message listener", () => {
   const mockWindow = createWindowMock()
   const channel = interframe(mockWindow)
 
-  expect(() =>
-  {
+  expect(() => {
     channel.addListener(() => {
       // noop
     })
   }).not.toThrow()
 })
 
-test("can send message", () =>
-{
+test("can send message", () => {
   const mockWindow = createWindowMock()
   const channel = interframe(mockWindow, "*", mockWindow)
 
   expect(typeof channel.send).toBe("function")
 
-  expect(() =>
-  {
+  expect(() => {
     channel.send()
   }).toThrow(/parameter/)
 
-  expect(() =>
-  {
+  expect(() => {
     channel.send(123) // eslint-disable-line no-magic-numbers
   }).toThrow(/string/)
 
-  expect(() =>
-  {
+  expect(() => {
     channel.send("namespace") // eslint-disable-line no-magic-numbers
   }).not.toThrow()
 
   expect(typeof channel.send("namespace").then).toBe("function")
 })
 
-test("can send and receive", (done) =>
-{
+test("can send and receive", (done) => {
   const mockWindow = createWindowMock()
   const channel1 = interframe(mockWindow, "*", mockWindow)
   const channel2 = interframe(mockWindow, "*", mockWindow)
@@ -98,43 +88,35 @@ test("handshakes", (done) => {
   })
 })
 
-test("response to message", (done) =>
-{
+test("response to message", (done) => {
   const mockWindow = createWindowMock()
   const channel1 = interframe(mockWindow, "*", mockWindow)
   const channel2 = interframe(mockWindow, "*", mockWindow)
 
-  channel1.addListener((message) =>
-  {
+  channel1.addListener((message) => {
     const responseChannel = message.open()
-    setTimeout(() =>
-    {
+    setTimeout(() => {
       responseChannel.response({
         hello: `Hi ${message.data.username}`
       })
     }, 1000)
   })
 
-  return channel2
-    .send("my namespace", { username: "Sebastian" })
-    .then((message) =>
-    {
-      expect(message).toBeDefined()
-      expect(message.data.hello).toBe("Hi Sebastian")
+  return channel2.send("my namespace", { username: "Sebastian" }).then((message) => {
+    expect(message).toBeDefined()
+    expect(message.data.hello).toBe("Hi Sebastian")
 
-      return done()
-    })
+    return done()
+  })
 })
 
-test("response to message before handshake", (done) =>
-{
+test("response to message before handshake", (done) => {
   const mockWindow = createWindowMock({ delay: true })
   const channel1 = interframe(mockWindow, "*", mockWindow)
 
   channel1
     .send("my namespace", { username: "Sebastian" })
-    .then((message) =>
-    {
+    .then((message) => {
       expect(message).toBeDefined()
       expect(message.data.hello).toBe("Hi Sebastian")
       return done()
@@ -146,11 +128,9 @@ test("response to message before handshake", (done) =>
 
   const channel2 = interframe(mockWindow, "*", mockWindow)
 
-  channel2.addListener((message) =>
-  {
+  channel2.addListener((message) => {
     const responseChannel = message.open()
-    setTimeout(() =>
-    {
+    setTimeout(() => {
       responseChannel.response({
         hello: `Hi ${message.data.username}`
       })
