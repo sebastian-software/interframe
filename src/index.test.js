@@ -156,3 +156,23 @@ test("addListener namespace should be respected", (done) => {
   }, 100)
 })
 
+test("queue messages that have no listener", (done) => {
+  const mockWindow = createWindowMock()
+  const mockWindow2 = createWindowMock()
+  const channel1 = interframe(mockWindow, "*", mockWindow2)
+
+  channel1.send("delayed", { value: "my data" })
+
+  setTimeout(() => {
+    const channel2 = interframe(mockWindow2, "*", mockWindow)
+
+    setTimeout(() => {
+      // eslint-disable-next-line max-nested-callbacks
+      channel2.addListener("delayed", (message) => {
+        expect(message.namespace).toBe("delayed")
+        expect(message.data.value).toBe("my data")
+        done()
+      })
+    }, 100)
+  }, 100)
+})

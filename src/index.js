@@ -149,7 +149,18 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       responseResolver.delete(messageData.responseId)
     } else {
       const message = createMessage(messageData)
-      for (const listener of listeners) listener(createMessage(message))
+
+      if (listeners.has(message.namespace)) {
+        for (const listener of listeners.get(message.namespace).values()) {
+          listener(createMessage(message))
+        }
+      } else {
+        if (!outstandingMessages.has(message.namespace)) {
+          outstandingMessages.set(message.namespace, new Set())
+        }
+
+        outstandingMessages.get(message.namespace).add(createMessage(message))
+      }
     }
   }
 
