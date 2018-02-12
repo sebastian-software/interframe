@@ -12,71 +12,67 @@ Communication made easy between browser frames.
 [travis-img]: https://img.shields.io/travis/sebastian-software/interframe/master.svg?branch=master&label=unix%20build
 [travis]: https://travis-ci.org/sebastian-software/interframe
 
-
 # Using Interframe
 
-*Interframe* provides a factory function that takes a `window` and an `origin`
+_Interframe_ provides a factory function that takes a `window` and an `origin`
 to open a communication channel. Please provide the `window` object of the
 counterpart frame to open a communication channel with that frame.
 
-````
+```
 import interframe from "interframe"
 
 /* get reference to iframe */
 const iframe = document.getElementById("myIframe")
 
 const channel = interframe(iframe.contentWindow, "*")
-````
+```
 
 Using `*` as origin allows communication with every other message provider.
 
 Inside of the iframe you can open the channel via
 
-````
+```
 const channel = interframe(window.top)
-````
+```
 
 All communication data are stored in memory as long as the handshake is not done. As soon as the handshake is done the data
 are sent through the channel.
 
-
 ## Listening for messages
 
-*Interframe* allowes to add message event listeners to receive messages from
-the opposite side. As long as no message listener is assigned messages are
-cached.
+_Interframe_ allowes to add message event listeners to receive messages from
+the opposite side. As long as no message listener for the specific namespace
+is assigned messages are cached.
 
-````
-channel.addListener((message) =>
+```
+channel.addListener("namespace", (message) =>
 {
   console.log(message.id)
   console.log(message.namespace)
   console.log(message.data)
   console.log(message.channel)
 })
-````
-
+```
 
 ## Sending messages
 
 A message consist of a namespace and, optional, a serializable object.
 
-````
+```
 channel.send("namespace", { foo: "bar" })
-````
-
+```
 
 ## Responding to messages
 
-As each message has a unique *id* interframe is able to response to messages.
-For this the `send()` method returns a *promise* that is resolved with a message.
+As each message has a unique _id_ interframe is able to response to messages.
+For this the `send()` method returns a _promise_ that is resolved with a message.
 If response channel is not opened inside message callback the promise is rejected.
 
-````
+```
 const channel1 = interframe(window, "*")
 const channel2 = interframe(window, "*")
 
-channel1.addListener((message) =>
+channel1.addListener("my namespace", (message) =>
 {
   const responseChannel = message.open()
 
@@ -97,13 +93,13 @@ channel2
     console.log(message.data)
     console.log(message.channel)
   })
-````
+```
 
 `response()` is a shortcut of send with preset namespace of source message.
 
 # API
 
-````
+```
 function interframe(targetWindow, [origin = "*"])
 
 returns
@@ -114,75 +110,69 @@ returns
   send,
   hasHandshake
 }
-````
+```
 
 This factory function returns a channel.
 
-
-
-````
-function addListener(callback)
+```
+function addListener(namespace, callback)
 
 returns
 
 callback
-````
+```
 
 Add callback for new messages. callback is a function with the signature
 `(message) => {}`
 
-
-
-````
+```
 function removeListener(callback)
-````
+```
 
 Disconnect specific callback from message events.
 
-
-
-````
+```
 function send(namespace, [data])
 
 returns
 
 Promise<message>
-````
+```
 
 Send message to opposite side. `namespace` is a string that defines the type
 of the message. `data` is an optional argument that must be serializable by
 `JSON.stringify`.
 
 The returned message consists of
-````
+
+```
 {
   id,
   data,
   namespace,
   response,
 }
-````
+```
 
-- id is the id of the message
-- data is the optional data object (given in send())
-- namespace is the namespace (given in send())
+* id is the id of the message
+* data is the optional data object (given in send())
+* namespace is the namespace (given in send())
 
 The promise only resolves if the `response()`function of the message inside addListener callback is used.
 
-````
+```
 function hasHandshake([callback])
 
 returns
 
 boolean
-````
+```
 
 Returns if handshake is successfull. An optional callback is called as
 soon as there is a handshake.
-
 
 ## Copyright
 
 <img src="https://raw.githubusercontent.com/sebastian-software/s15e-javascript/master/assets/sebastiansoftware.png" alt="Sebastian Software GmbH Logo" width="250" height="200"/>
 
-Copyright 2016-2017<br/>[Sebastian Software GmbH](http://www.sebastian-software.de)
+Copyright 2016-2018<br/>[Sebastian Software GmbH](http://www.sebastian-software.de)
