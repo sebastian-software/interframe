@@ -1,32 +1,9 @@
 import interframe from "."
+import jsdom from "jsdom"
 
-function createWindowMock()
-{
-  const listeners = []
-
-  const mockWin = {
-    postMessage: jest.fn().mockImplementation((message, origin) =>
-    {
-      listeners.forEach((listener) =>
-      {
-        setTimeout(() => {
-          listener({
-            source: mockWin,
-            origin,
-            data: message
-          })
-        }, 0)
-      })
-    }),
-
-    addEventListener: jest.fn().mockImplementation((type, callback) =>
-    {
-      if (type === "message")
-        listeners.push(callback)
-    })
-  }
-
-  return mockWin
+function createWindowMock() {
+  const virtDom = new jsdom.JSDOM("<!DOCTYPE html>")
+  return virtDom.window
 }
 
 test("factory function available", () =>
@@ -94,17 +71,30 @@ test("can send and receive", (done) =>
   channel2.send("testNamespace")
 })
 
-test("handshakes", (done) =>
-{
+test("handshakes", (done) => {
   const mockWindow = createWindowMock()
-  const channel1 = interframe(mockWindow, "*", mockWindow)
-  const channel2 = interframe(mockWindow, "*", mockWindow)
+  const mockWindow2 = createWindowMock()
+  const channel1 = interframe(mockWindow, "*", mockWindow2)
+  const channel2 = interframe(mockWindow2, "*", mockWindow)
 
-  channel1.hasHandshake(() =>
-  {
-    expect(channel1.hasHandshake()).toEqual(true)
-    expect(channel2.hasHandshake()).toEqual(true)
-    done()
+  let handshake1 = false
+  let handshake2 = false
+
+  const callback = () => {
+    if (handshake1 && handshake2) {
+      expect(channel1.hasHandshake()).toEqual(true)
+      expect(channel2.hasHandshake()).toEqual(true)
+      done()
+    }
+  }
+
+  channel1.hasHandshake(() => {
+    handshake1 = true
+    callback()
+  })
+  channel2.hasHandshake(() => {
+    handshake2 = true
+    callback()
   })
 })
 
