@@ -1,4 +1,5 @@
-/* eslint-disable filenames/match-exported, max-params */
+/* eslint-disable filenames/match-exported, max-params, compat/compat */
+/* eslint-env browser */
 
 import nextID from "./nextID"
 
