@@ -14,8 +14,8 @@ function interframe(targetWindow, origin = "*", sourceWindow)
   }
 
   const listeners = []
-  const handshakeCallback = []
-  const responseResolver = {}
+  const handshakeCallback = new Set()
+  const responseResolver = new Map()
   const preHandshakeSendQueue = []
   let isHandshaken = false
 
@@ -68,11 +68,12 @@ function interframe(targetWindow, origin = "*", sourceWindow)
 
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
-        responseResolver[id] = undefined // eslint-disable-line security/detect-object-injection
+        responseResolver.delete(id)
         resolve()
       }, PROMISE_TIMEOUT)
 
-      responseResolver[id] = { // eslint-disable-line security/detect-object-injection
+      responseResolver.set(id, {
+        // eslint-disable-line security/detect-object-injection
         resolve,
         timer
       }
@@ -109,7 +110,7 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     for (const hsCallback of handshakeCallback) {
       hsCallback()
     }
-    handshakeCallback.length = 0
+    handshakeCallback.clear()
 
     for (const sendItem of preHandshakeSendQueue) {
       send(
@@ -150,20 +151,15 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     return message
   }
 
-  function handleMessage(messageData)
-  {
-    if (messageData.responseId && responseResolver[messageData.responseId])
-    {
-      const resolver = responseResolver[messageData.responseId]
+  function handleMessage(messageData) {
+    if (messageData.responseId && responseResolver.has(messageData.responseId)) {
+      const resolver = responseResolver.get(messageData.responseId)
       clearTimeout(resolver.timer)
       resolver.resolve(messageData)
-      responseResolver[messageData.responseId] = undefined
-    }
-    else
-    {
+      responseResolver.delete(messageData.responseId)
+    } else {
       const message = createMessage(messageData)
-      for (const listener of listeners)
-        listener(createMessage(message))
+      for (const listener of listeners) listener(createMessage(message))
     }
   }
 
@@ -205,7 +201,9 @@ function interframe(targetWindow, origin = "*", sourceWindow)
       return true
     }
 
-    handshakeCallback.push(callback)
+    if (typeof callback === "function") {
+      handshakeCallback.add(callback)
+    }
     return false
   }
 
