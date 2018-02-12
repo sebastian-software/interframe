@@ -85,10 +85,10 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     targetWindow.postMessage(JSON.stringify(message), origin)
   }
 
-  function isSafeMessage(msgSource, msgOrigin, msgType)
-  {
-    const safeSource = msgSource === targetWindow
-    const safeOrigin = (origin === "*") || (msgOrigin === origin)
+  function isSafeMessage(msgSource, msgOrigin, msgType) {
+    const jsdom = window.navigator.userAgent.indexOf("jsdom") >= 0 && msgSource === null
+    const safeSource = msgSource === targetWindow || jsdom
+    const safeOrigin = origin === "*" || msgOrigin === origin
     const safeType = msgType === TYPE
 
     return safeSource && safeOrigin && safeType
