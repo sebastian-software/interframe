@@ -11,23 +11,32 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     throw new Error("parameter 'targetWindow' is missing")
   }
 
-  const listeners = []
+  const listeners = new Map()
   const handshakeCallback = new Set()
   const responseResolver = new Map()
-  const preHandshakeSendQueue = []
+  const preHandshakeSendQueue = new Set()
+  const outstandingMessages = new Map()
   let isHandshaken = false
 
-  function addListener(callback) {
-    listeners.push(callback)
+  function addListener(namespace, callback) {
+    if (!listeners.has(namespace)) {
+      listeners.set(namespace, new Set())
+    }
+    listeners.get(namespace).add(callback)
+
+    if (outstandingMessages.has(namespace)) {
+      for (const message of outstandingMessages.get(namespace).values()) {
+        callback(message)
+      }
+
+      outstandingMessages.delete(namespace)
+    }
+
     return callback
   }
 
-  function removeListener(callback) {
-    const pos = listeners.indexOf(callback)
-
-    if (pos >= 0) {
-      listeners.splice(pos, 1)
-    }
+  function removeListener(namespace, callback) {
+    listeners.get(namespace).delete(callback)
   }
 
   function send(namespace, data = null, responseId) {
@@ -40,7 +49,7 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
 
     if (!isHandshaken) {
       return new Promise((resolve) => {
-        preHandshakeSendQueue.push({
+        preHandshakeSendQueue.add({
           namespace,
           data,
           responseId,
@@ -104,11 +113,12 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     }
     handshakeCallback.clear()
 
-    for (const sendItem of preHandshakeSendQueue) {
+    for (const sendItem of preHandshakeSendQueue.values()) {
       send(sendItem.namespace, sendItem.data, sendItem.responseId)
         .then((response) => sendItem.resolve(response)) // eslint-disable-line promise/prefer-await-to-then
         .catch(() => sendItem.resolve())
     }
+    preHandshakeSendQueue.clear()
   }
 
   function createMessage(messageData) {

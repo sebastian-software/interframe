@@ -21,7 +21,7 @@ test("can add message listener", () => {
   const channel = interframe(mockWindow)
 
   expect(() => {
-    channel.addListener(() => {
+    channel.addListener("namespace", () => {
       // noop
     })
   }).not.toThrow()
@@ -53,7 +53,7 @@ test("can send and receive", (done) => {
   const channel1 = interframe(mockWindow, "*", mockWindow)
   const channel2 = interframe(mockWindow, "*", mockWindow)
 
-  channel1.addListener((message) => {
+  channel1.addListener("testNamespace", (message) => {
     expect(message.namespace).toBe("testNamespace")
     done()
   })
@@ -93,7 +93,7 @@ test("response to message", (done) => {
   const channel1 = interframe(mockWindow, "*", mockWindow)
   const channel2 = interframe(mockWindow, "*", mockWindow)
 
-  channel1.addListener((message) => {
+  channel1.addListener("my namespace", (message) => {
     const responseChannel = message.open()
     setTimeout(() => {
       responseChannel.response({
@@ -128,7 +128,7 @@ test("response to message before handshake", (done) => {
 
   const channel2 = interframe(mockWindow, "*", mockWindow)
 
-  channel2.addListener((message) => {
+  channel2.addListener("my namespace", (message) => {
     const responseChannel = message.open()
     setTimeout(() => {
       responseChannel.response({
@@ -137,3 +137,22 @@ test("response to message before handshake", (done) => {
     }, 1000)
   })
 })
+
+test("addListener namespace should be respected", (done) => {
+  const mockWindow = createWindowMock()
+  const channel1 = interframe(mockWindow, "*", mockWindow)
+  const channel2 = interframe(mockWindow, "*", mockWindow)
+
+  const callback = jest.fn()
+
+  channel1.addListener("tn", callback)
+  channel1.addListener("uncalled", callback)
+
+  channel2.send("tn")
+
+  setTimeout(() => {
+    expect(callback.mock.calls).toHaveLength(1)
+    done()
+  }, 100)
+})
+
