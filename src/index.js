@@ -6,10 +6,8 @@ import nextID from "./nextID"
 const TYPE = "application/interframe-ssoft-v1+json"
 const PROMISE_TIMEOUT = 3000
 
-function interframe(targetWindow, origin = "*", sourceWindow)
-{
-  if (!targetWindow)
-  {
+function interframe(targetWindow, origin = "*", sourceWindow) {
+  if (!targetWindow) {
     throw new Error("parameter 'targetWindow' is missing")
   }
 
@@ -19,14 +17,12 @@ function interframe(targetWindow, origin = "*", sourceWindow)
   const preHandshakeSendQueue = []
   let isHandshaken = false
 
-  function addListener(callback)
-  {
+  function addListener(callback) {
     listeners.push(callback)
     return callback
   }
 
-  function removeListener(callback)
-  {
+  function removeListener(callback) {
     const pos = listeners.indexOf(callback)
 
     if (pos >= 0) {
@@ -34,20 +30,16 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     }
   }
 
-  function send(namespace, data = null, responseId)
-  {
-    if (!namespace)
-    {
+  function send(namespace, data = null, responseId) {
+    if (!namespace) {
       throw new Error("parameter 'namespace' is missing")
     }
-    if (typeof namespace !== "string")
-    {
+    if (typeof namespace !== "string") {
       throw new Error("parameter 'namespace' must be a string")
     }
 
     if (!isHandshaken) {
-      return new Promise((resolve) =>
-      {
+      return new Promise((resolve) => {
         preHandshakeSendQueue.push({
           namespace,
           data,
@@ -58,13 +50,16 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     }
 
     const id = nextID()
-    targetWindow.postMessage(JSON.stringify({
-      id,
-      responseId,
-      type: TYPE,
-      namespace,
-      data
-    }), origin)
+    targetWindow.postMessage(
+      JSON.stringify({
+        id,
+        responseId,
+        type: TYPE,
+        namespace,
+        data
+      }),
+      origin
+    )
 
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
@@ -76,17 +71,16 @@ function interframe(targetWindow, origin = "*", sourceWindow)
         // eslint-disable-line security/detect-object-injection
         resolve,
         timer
-      }
+      })
     })
   }
 
-  function sendHandshake(acknowledgement = false)
-  {
-    const message = { type: TYPE }
-    if (acknowledgement)
-      message.handshakeConfirmation = true
-    else
-      message.handshake = true
+  function sendHandshake(acknowledgement = false) {
+    const message = {
+      type: TYPE,
+      handshakeConfirmation: Boolean(acknowledgement),
+      handshake: !acknowledgement
+    }
 
     targetWindow.postMessage(JSON.stringify(message), origin)
   }
@@ -100,10 +94,8 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     return safeSource && safeOrigin && safeType
   }
 
-  function handleHandshake(data)
-  {
-    if (data.handshake)
-      sendHandshake(true)
+  function handleHandshake(data) {
+    if (data.handshake) sendHandshake(true)
 
     isHandshaken = true
 
@@ -113,38 +105,26 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     handshakeCallback.clear()
 
     for (const sendItem of preHandshakeSendQueue) {
-      send(
-        sendItem.namespace,
-        sendItem.data,
-        sendItem.responseId
-      ).then(
-        (response) => sendItem.resolve(response)
-      ).catch(
-        () => sendItem.resolve()
-      )
+      send(sendItem.namespace, sendItem.data, sendItem.responseId)
+        .then((response) => sendItem.resolve(response)) // eslint-disable-line promise/prefer-await-to-then
+        .catch(() => sendItem.resolve())
     }
   }
 
-  function createMessage(messageData)
-  {
+  function createMessage(messageData) {
     const message = {
       id: messageData.id,
       data: messageData.data,
       namespace: messageData.namespace,
 
       open: () => {
-        message.isPromise = true
+        message.isPromise = true // eslint-disable-line immutable/no-mutation
 
-        return Object.assign(
-          {},
-          messageData,
-          {
-            response: (data) =>
-            {
-              send(messageData.namespace, data, messageData.id)
-            }
+        return Object.assign({}, messageData, {
+          response: (data) => {
+            send(messageData.namespace, data, messageData.id)
           }
-        )
+        })
       }
     }
 
@@ -163,26 +143,19 @@ function interframe(targetWindow, origin = "*", sourceWindow)
     }
   }
 
-  function messageListener(event)
-  {
+  function messageListener(event) {
     let data
-
-    try
-    {
+    try {
       data = JSON.parse(event.data)
-    }
-    catch (error)
-    {
+    } catch (error) {
       return false
     }
 
-    if (!isSafeMessage(event.source, event.origin, data.type))
-    {
+    if (!isSafeMessage(event.source, event.origin, data.type)) {
       return false
     }
 
-    if (data.handshake || data.handshakeConfirmation)
-      return handleHandshake(data)
+    if (data.handshake || data.handshakeConfirmation) return handleHandshake(data)
 
     return handleMessage(data)
   }
@@ -192,12 +165,11 @@ function interframe(targetWindow, origin = "*", sourceWindow)
 
   sendHandshake()
 
-  function hasHandshake(callback)
-  {
-    if (isHandshaken)
-    {
-      if (typeof callback === "function")
+  function hasHandshake(callback) {
+    if (isHandshaken) {
+      if (typeof callback === "function") {
         callback()
+      }
       return true
     }
 
