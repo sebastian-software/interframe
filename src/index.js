@@ -152,7 +152,12 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
 
       if (listeners.has(message.namespace)) {
         for (const listener of listeners.get(message.namespace).values()) {
-          listener(createMessage(message))
+          // eslint-disable-next-line max-depth
+          if (typeof listener === "function") {
+            listener(createMessage(message))
+          } else if (listener) {
+            console.error("Listener is no function: ", listener) // eslint-disable-line
+          }
         }
       } else {
         if (!outstandingMessages.has(message.namespace)) {
