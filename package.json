@@ -1,6 +1,6 @@
 {
   "name": "interframe",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "postMessage web api based lightweight interframe communication layer",
   "main": "lib/interframe.commonjs.js",
   "module": "lib/interframe.esmodules.js",
