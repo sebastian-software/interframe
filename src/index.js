@@ -116,6 +116,29 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     preHandshakeSendQueue.clear()
   }
 
+  function objectAssignPolyfill(target) {
+    const result = Object(target)
+
+    for (let index = 1; index < arguments.length; index++) {
+      const nextSource = arguments[index] // eslint-disable-line prefer-rest-params
+
+      // Skip over if undefined or null
+      if (nextSource != null) {
+        for (const nextKey in nextSource) {
+          // Avoid bugs when hasOwnProperty is shadowed
+          // eslint-disable-next-line max-depth
+          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+            result[nextKey] = nextSource[nextKey] // eslint-disable-line immutable/no-mutation
+          }
+        }
+      }
+    }
+
+    return result
+  }
+  const objectAssign =
+    typeof Object.assign == "function" ? Object.assign : objectAssignPolyfill
+
   function createMessage(messageData) {
     const message = {
       id: messageData.id,
@@ -125,7 +148,7 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       open: () => {
         message.isPromise = true // eslint-disable-line immutable/no-mutation
 
-        return Object.assign({}, messageData, {
+        return objectAssign({}, messageData, {
           response: (data) => {
             send(messageData.namespace, data, messageData.id)
           }
