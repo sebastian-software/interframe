@@ -25,10 +25,7 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     listeners.get(namespace).add(callback)
 
     if (outstandingMessages.has(namespace)) {
-      for (const message of outstandingMessages.get(namespace).values()) {
-        callback(message)
-      }
-
+      outstandingMessages.get(namespace).forEach((message) => callback(message))
       outstandingMessages.delete(namespace)
     }
 
@@ -108,16 +105,14 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
 
     isHandshaken = true
 
-    for (const hsCallback of handshakeCallback) {
-      hsCallback()
-    }
+    handshakeCallback.forEach((hsCallback) => hsCallback())
     handshakeCallback.clear()
 
-    for (const sendItem of preHandshakeSendQueue.values()) {
+    preHandshakeSendQueue.forEach((sendItem) =>
       send(sendItem.namespace, sendItem.data, sendItem.responseId)
         .then((response) => sendItem.resolve(response)) // eslint-disable-line promise/prefer-await-to-then
         .catch(() => sendItem.resolve())
-    }
+    )
     preHandshakeSendQueue.clear()
   }
 
@@ -151,14 +146,14 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       const message = createMessage(messageData)
 
       if (listeners.has(message.namespace)) {
-        for (const listener of listeners.get(message.namespace).values()) {
+        listeners.get(message.namespace).forEach((listener) => {
           // eslint-disable-next-line max-depth
           if (typeof listener === "function") {
             listener(createMessage(message))
           } else if (listener) {
             console.error("Listener is no function: ", listener) // eslint-disable-line
           }
-        }
+        })
       } else {
         if (!outstandingMessages.has(message.namespace)) {
           outstandingMessages.set(message.namespace, new Set())
