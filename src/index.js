@@ -5,11 +5,36 @@ import nextID from "./nextID"
 
 const TYPE = "application/interframe-ssoft-v1+json"
 const PROMISE_TIMEOUT = 3000
+const HAS_CONSOLE_LOG =
+  typeof console !== "undefined" && typeof console.log === "function"
+const UNIQUE_ID_RANDOM_LENGTH = 5
 
-function interframe(targetWindow, origin = "*", sourceWindow) {
+function log(id, ...messages) {
+  if (HAS_CONSOLE_LOG) {
+    // eslint-disable-next-line no-console
+    console.log(`[interframe ${id}]`, ...messages)
+  }
+}
+
+function generateUniqueId() {
+  const nowDate = Date.now().toString()
+
+  return `${nowDate.substring(nowDate.length - UNIQUE_ID_RANDOM_LENGTH)}-${Math.random()
+    .toFixed(UNIQUE_ID_RANDOM_LENGTH)
+    .substring(2)}`
+}
+
+function interframe(
+  targetWindow,
+  origin = "*",
+  sourceWindow,
+  { debug } = { debug: false }
+) {
   if (!targetWindow) {
     throw new Error("parameter 'targetWindow' is missing")
   }
+
+  const ownId = generateUniqueId()
 
   const listeners = new Map()
   const handshakeCallback = new Set()
@@ -19,12 +44,21 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
   let isHandshaken = false
 
   function addListener(namespace, callback) {
+    if (debug) {
+      log(ownId, `addListener() to ${namespace}`)
+    }
     if (!listeners.has(namespace)) {
       listeners.set(namespace, new Set())
     }
     listeners.get(namespace).add(callback)
 
     if (outstandingMessages.has(namespace)) {
+      if (debug) {
+        log(
+          ownId,
+          ` \\- has ${outstandingMessages.get(namespace).length} outstanding messages`
+        )
+      }
       outstandingMessages.get(namespace).forEach((message) => callback(message))
       outstandingMessages.delete(namespace)
     }
@@ -33,6 +67,9 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
   }
 
   function removeListener(namespace, callback) {
+    if (debug) {
+      log(ownId, `removeListener() to ${namespace}`)
+    }
     listeners.get(namespace).delete(callback)
   }
 
@@ -45,6 +82,9 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
     }
 
     if (!isHandshaken) {
+      if (debug) {
+        log(ownId, `send() to ${namespace} without handshake`, data)
+      }
       return new Promise((resolve) => {
         preHandshakeSendQueue.add({
           namespace,
@@ -55,6 +95,9 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       })
     }
 
+    if (debug) {
+      log(ownId, `send() to ${namespace}`, data)
+    }
     const id = nextID()
     targetWindow.postMessage(
       JSON.stringify({
@@ -86,6 +129,14 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       type: TYPE,
       handshakeConfirmation: Boolean(acknowledgement),
       handshake: !acknowledgement
+    }
+
+    if (debug) {
+      if (acknowledgement) {
+        log(ownId, `sendHandshake() as acknowledgement to handshake request`)
+      } else {
+        log(ownId, `sendHandshake() as initial handshake request`)
+      }
     }
 
     targetWindow.postMessage(JSON.stringify(message), origin)
@@ -161,6 +212,9 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
 
   function handleMessage(messageData) {
     if (messageData.responseId && responseResolver.has(messageData.responseId)) {
+      if (debug) {
+        log(ownId, `handleMessage() having response id`, messageData)
+      }
       const resolver = responseResolver.get(messageData.responseId)
       clearTimeout(resolver.timer)
       resolver.resolve(messageData)
@@ -169,6 +223,14 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
       const message = createMessage(messageData)
 
       if (listeners.has(message.namespace)) {
+        if (debug) {
+          log(
+            ownId,
+            `handleMessage() received message having namespace listeners`,
+            messageData
+          )
+        }
+
         listeners.get(message.namespace).forEach((listener) => {
           // eslint-disable-next-line max-depth
           if (typeof listener === "function") {
@@ -178,6 +240,13 @@ function interframe(targetWindow, origin = "*", sourceWindow) {
           }
         })
       } else {
+        if (debug) {
+          log(
+            ownId,
+            `handleMessage() received message without listeners, put into outstanding messages queue`,
+            messageData
+          )
+        }
         if (!outstandingMessages.has(message.namespace)) {
           outstandingMessages.set(message.namespace, new Set())
         }
