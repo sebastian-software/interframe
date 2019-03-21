@@ -173,6 +173,6 @@ soon as there is a handshake.
 
 ## Copyright
 
-<img src="https://raw.githubusercontent.com/sebastian-software/s15e-javascript/master/assets/sebastiansoftware.png" alt="Sebastian Software GmbH Logo" width="250" height="200"/>
+<img src="https://cdn.rawgit.com/sebastian-software/sebastian-software-brand/0d4ec9d6/sebastiansoftware-en.svg" alt="Sebastian Software GmbH Logo" width="460" height="160"/>
 
-Copyright 2016-2018<br/>[Sebastian Software GmbH](http://www.sebastian-software.de)
+Copyright 2016-2019<br/>[Sebastian Software GmbH](http://www.sebastian-software.de)
