@@ -99,16 +99,29 @@ function interframe(
       log(ownId, `send() to ${namespace}`, data)
     }
     const id = nextID()
-    targetWindow.postMessage(
-      JSON.stringify({
-        id,
-        responseId,
-        type: TYPE,
-        namespace,
-        data
-      }),
-      origin
-    )
+
+    if (origin !== null) {
+      targetWindow.postMessage(
+        JSON.stringify({
+          id,
+          responseId,
+          type: TYPE,
+          namespace,
+          data
+        }),
+        origin
+      )
+    } else {
+      targetWindow.postMessage(
+        JSON.stringify({
+          id,
+          responseId,
+          type: TYPE,
+          namespace,
+          data
+        })
+      )
+    }
 
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
@@ -117,7 +130,6 @@ function interframe(
       }, PROMISE_TIMEOUT)
 
       responseResolver.set(id, {
-        // eslint-disable-line security/detect-object-injection
         resolve,
         timer
       })
@@ -139,13 +151,17 @@ function interframe(
       }
     }
 
-    targetWindow.postMessage(JSON.stringify(message), origin)
+    if (origin !== null) {
+      targetWindow.postMessage(JSON.stringify(message), origin)
+    } else {
+      targetWindow.postMessage(JSON.stringify(message))
+    }
   }
 
   function isSafeMessage(msgSource, msgOrigin, msgType) {
     const jsdom = window.navigator.userAgent.indexOf("jsdom") >= 0 && msgSource === null
     const safeSource = msgSource === targetWindow || jsdom
-    const safeOrigin = origin === "*" || msgOrigin === origin
+    const safeOrigin = origin === "*" || origin === null || msgOrigin === origin
     const safeType = msgType === TYPE
 
     return safeSource && safeOrigin && safeType
@@ -179,7 +195,7 @@ function interframe(
           // Avoid bugs when hasOwnProperty is shadowed
           // eslint-disable-next-line max-depth
           if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-            result[nextKey] = nextSource[nextKey] // eslint-disable-line immutable/no-mutation
+            result[nextKey] = nextSource[nextKey]
           }
         }
       }
@@ -197,7 +213,7 @@ function interframe(
       namespace: messageData.namespace,
 
       open: () => {
-        message.isPromise = true // eslint-disable-line immutable/no-mutation
+        message.isPromise = true
 
         return objectAssign({}, messageData, {
           response: (data) => {
