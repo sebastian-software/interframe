@@ -1,5 +1,7 @@
 {
   "presets": [
-    "edge"
+    [
+      "edge"
+    ]
   ]
 }

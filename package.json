@@ -11,10 +11,11 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepare": "rimraf lib && prepublish",
+    "prepare": "preppy",
     "release": "release-it --github.release --npm.publish --non-interactive",
     "release:minor": "release-it --github.release --npm.publish --non-interactive --increment minor",
-    "release:major": "release-it --github.release --npm.publish --non-interactive --increment major"
+    "release:major": "release-it --github.release --npm.publish --non-interactive --increment major",
+    "check-updates": "npx npm-check-updates -u -i && npm install"
   },
   "keywords": [
     "communication",
@@ -29,14 +30,19 @@
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-jest": "^22.4.4",
-    "eslint": "^4.19.1",
-    "eslint-config-readable": "^1.14.0",
-    "jest": "^22.4.4",
-    "jsdom": "^11.11.0",
-    "prepublish": "^1.7.0",
-    "prettier": "^1.13.7",
-    "release-it": "^7.4.7",
-    "rimraf": "^2.6.2"
+    "babel-jest": "^27.0.2",
+    "babel-preset-edge": "5.5.1",
+    "eslint": "^7.28.0",
+    "eslint-config-readable": "^2.3.2",
+    "jest": "^27.0.4",
+    "jsdom": "^16.6.0",
+    "preppy": "10.10.1",
+    "prettier": "^2.3.1",
+    "release-it": "^14.8.0",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.14.0",
+    "core-js": "^3.14.0"
   }
 }
